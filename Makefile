@@ -27,6 +27,7 @@ export TOPDIR
 TARGET := uftpd
 
 obj-y += uftpd.o
+obj-y += log.o
 
 all : 
 	make -C ./ -f $(TOPDIR)/Makefile.build

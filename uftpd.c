@@ -1,36 +1,14 @@
-#include <arpa/inet.h>
-#include <dirent.h>
-#include <errno.h>
-#include <fcntl.h>
-#include <grp.h>
-#include <libgen.h>
-#include <limits.h>
-#include <locale.h>
-#include <netdb.h>
-#include <netinet/in.h>
-#include <pwd.h>
-#include <sched.h>
-#include <stdarg.h>
-#include <stdio.h>
-#include <stdint.h>
-#include <inttypes.h>		/*  PRIu64/PRI64, etc. for stdint.h types */
-#include <stdlib.h>
-#include <string.h>
-#include <sys/param.h>		/* isset(), setbit(), etc. */
-#include <sys/socket.h>
-#include <sys/stat.h>
-#include <sys/types.h>
-#include <sys/wait.h>
-#include <syslog.h>
-#include <time.h>
-#include <unistd.h>
-#include <uev/uev.h>
-
 #include "uftpd.h"
 
+#define TFTP_DEFAULT_PORT 69
+#define TFTP_SERVICE_NAME "tftp"
+#define TFTP_PROTO_NAME   "udp"
+
 /* global daemon settings */
-char *prognm = "uftpd";
-char *home = NULL;
+static char *prognm = "uftpd";
+static char *home = NULL;
+static int do_syslog = 0;
+static int do_tftp = TFTP_DEFAULT_PORT;
 
 static int usage(int code)
 {
@@ -40,6 +18,7 @@ static int usage(int code)
 
 	return code;
 }
+
 int main(int argc, char **argv)
 {
     uev_ctx_t ctx;
@@ -60,9 +39,11 @@ int main(int argc, char **argv)
 
     if (optind < argc) {
         home = realpath(argv[optind], NULL);
-        if (!home) {
+        if (!home || access(home, F_OK)) {
             fprintf(stderr, "Invalid root directory %s,", argv[optind]);
             exit(1);
         }
     }
+
+    INFO("home directory: %s", home);
 }
