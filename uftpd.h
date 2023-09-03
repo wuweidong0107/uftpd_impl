@@ -45,5 +45,7 @@
 #define INFO(fmt, args...)       LOGIT(LOG_INFO, 0, fmt, ##args)
 #define DBG(fmt, args...)        LOGIT(LOG_DEBUG, 0, fmt, ##args)
 
+extern int   do_syslog; 
+int open_socket(int port, int type, const char *desc);
 void logit(int severity, const char *fmt, ...);
 #endif

@@ -17,7 +17,7 @@ export STRIP OBJCOPY OBJDUMP
 CFLAGS := -Wall -O2 -g
 CFLAGS += -I$(shell pwd)/
 
-LDFLAGS := -lpthread
+LDFLAGS := -lpthread -luev
 
 export CFLAGS LDFLAGS
 
@@ -28,6 +28,7 @@ TARGET := uftpd
 
 obj-y += uftpd.o
 obj-y += log.o
+obj-y += common.o
 
 all : 
 	make -C ./ -f $(TOPDIR)/Makefile.build
