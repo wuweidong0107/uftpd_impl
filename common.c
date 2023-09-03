@@ -29,3 +29,68 @@ int open_socket(int port, int type, const char *desc)
     }
     return sd;
 }
+
+int set_nonblock(int fd)
+{
+    int flags;
+    flags = fcntl(fd, F_GETFL, 0);
+    if (!flags)
+        fcntl(fd, F_SETFL, flags | O_NONBLOCK);
+    return fd;
+}
+
+static void inactivity_cb(uev_t *w, void *arg, int events)
+{
+    uev_ctx_t *ctx = (uev_ctx_t *)arg;
+    INFO("Inactivity timer, exiting...");
+    uev_exit(ctx);
+}
+
+session_t* new_session(uev_ctx_t *ctx, int sd, int *rc)
+{
+    session_t *session = NULL;
+    pid_t pid;
+    
+    pid = fork();
+    if (pid) {
+        INFO("Created new client session as PID %d", pid);
+        *rc = pid;
+        return NULL;
+    }
+
+    ctx = calloc(1, sizeof(uev_ctx_t));
+    if (!ctx) {
+        ERR(errno, "Failed allocating session event context");
+        exit(1);
+    }
+
+    uev_init(ctx);
+
+    session = calloc(1, sizeof(session_t));
+    if (!session) {
+        ERR(errno, "Failed allocating session context");
+        goto fail;
+    }
+    session->sd = set_nonblock(sd);
+    session->ctx = ctx;
+
+    uev_timer_init(ctx, &session->timeout_watcher, inactivity_cb, ctx, INACTIVITY_TIMER, 0);
+    return session;
+fail:
+    if (ctx)
+        free(ctx);
+    *rc = -1;
+    return NULL;
+}
+
+int del_session(session_t *session)
+{
+    if (!session)
+        return -1;
+
+    if (session->ctx)
+        free(session->ctx);
+
+    free(session);
+    return 0;
+}

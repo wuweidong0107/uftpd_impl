@@ -29,6 +29,7 @@ TARGET := uftpd
 obj-y += uftpd.o
 obj-y += log.o
 obj-y += common.o
+obj-y += tftpcmd.o
 
 all : 
 	make -C ./ -f $(TOPDIR)/Makefile.build
