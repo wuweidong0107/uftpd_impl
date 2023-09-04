@@ -58,6 +58,14 @@ typedef union {
 
 } tftp_message_t;
 
+enum opcode {
+     RRQ=1,
+     WRQ,
+     DATA,
+     ACK,
+     ERROR
+};
+
 typedef struct {
     int sd;
     uev_ctx_t *ctx;
@@ -66,6 +74,11 @@ typedef struct {
 
     struct sockaddr_in client_sa;;
     struct sockaddr_in server_sa;
+
+    char *filename;
+    FILE *fp;
+    uint16_t block_number;
+    int to_close;
 } session_t;
 
 /* doesn't expect 5 second inactivity */
